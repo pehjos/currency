@@ -31,7 +31,7 @@ export default function Home() {
       const timer = setTimeout(() => {
         setError(null);
       }, 2000);
-      return () => clearTimeout(timer); // Cleanup the timer on component unmount
+      return () => clearTimeout(timer); 
     }
   }, [error]);
 

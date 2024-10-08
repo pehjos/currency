@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CalendarRange } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { SearchFormProps } from "../types/currencyTypes";
+import { SearchFormProps, Currency } from "../types/currencyTypes";
 import { currencies } from "../data/currencies";
 import ErrorAlert from "./ErrorAlert";
 
@@ -13,7 +13,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
   const [currencyCode, setCurrencyCode] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [filteredCurrencies, setFilteredCurrencies] = useState<unknown[]>([]);
+  const [filteredCurrencies, setFilteredCurrencies] = useState<Currency[]>([]); // Set Currency[] as the type
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
@@ -27,7 +27,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
     if (input) {
       const filtered = currencies.filter(
-        (currency) =>
+        (currency: Currency) =>
           currency.name.toUpperCase().includes(input) ||
           currency.code.toUpperCase().includes(input) ||
           currency.country.toUpperCase().includes(input)
@@ -39,11 +39,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
   };
 
-  const handleCurrencySelect = (currency: {
-    name: string;
-    code: string;
-    country: string;
-  }) => {
+  const handleCurrencySelect = (currency: Currency) => {
+    // Correctly typed now as Currency
     setCurrencyCode(currency.code);
     setShowSuggestions(false);
   };
@@ -106,7 +103,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         />
         {showSuggestions && (
           <div className="absolute z-10 w-full bg-white border rounded shadow-md max-h-60 overflow-y-auto">
-            {filteredCurrencies.map((currency) => (
+            {filteredCurrencies.map((currency: Currency) => (
               <div
                 key={currency.code}
                 onClick={() => handleCurrencySelect(currency)}
@@ -156,8 +153,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
             <div className="absolute z-50 top-14 left-0 right-0 mx-auto w-72 bg-gray-800 bg-opacity-80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-indigo-500">
               <DatePicker
                 selected={startDate}
-                onChange={(date: Date) => {
-                  setStartDate(date);
+                onChange={(date: Date | null) => {
+                  setStartDate(date); // Accepting null here
                   setIsStartDatePickerOpen(false);
                 }}
                 inline
@@ -192,7 +189,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             <div className="absolute z-50 top-14 left-0 right-0 mx-auto w-72 bg-gray-800 bg-opacity-80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-indigo-500">
               <DatePicker
                 selected={endDate}
-                onChange={(date: Date) => {
+                onChange={(date: Date | null) => {
                   setEndDate(date);
                   setIsEndDatePickerOpen(false);
                 }}
@@ -204,7 +201,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
+    
       <div className="flex justify-center space-x-4 mb-6">
         <button
           onClick={handleSearchLatest}

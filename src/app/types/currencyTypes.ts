@@ -2,8 +2,10 @@ export interface Currency {
     code: string;
     name: string;
     country: string;
-    flag: string;
+    countryCode: string;
+    flag?: string; 
   }
+  
   
 export interface LatestCurrencyData {
     'Realtime Currency Exchange Rate': {
