@@ -142,8 +142,10 @@ export default function Home() {
                   {cachedData['Realtime Currency Exchange Rate']['3. To_Currency Code']} - Latest: {cachedData['Realtime Currency Exchange Rate']['5. Exchange Rate']}
                 </div>
               )}
-
-              {!isLatestRate && <ResultsTable data={cachedData as HistoricalData} />}
+<div className=' !z-10'>
+{!isLatestRate && <ResultsTable  data={cachedData as HistoricalData} />}
+</div>
+             
             </>
           )}
         </main>

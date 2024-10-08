@@ -8,7 +8,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ data }) => {
   if (!data) return null;
 
   return (
-    <div className="overflow-x-auto p-4 bg-gray-800 bg-opacity-40 backdrop-blur-md rounded-2xl shadow-2xl border border-indigo-500">
+    <div className=" mt-24 p-4 bg-gray-800 bg-opacity-40 backdrop-blur-md rounded-2xl shadow-2xl border border-indigo-500">
       <table className="table-auto w-full border-collapse">
         <thead>
           <tr className="bg-indigo-600 bg-opacity-50 text-indigo-200">

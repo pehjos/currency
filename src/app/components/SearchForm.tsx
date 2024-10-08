@@ -123,9 +123,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
         )}
       </div>
 
-      {/* Date Range Inputs */}
+     
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-        {/* Start Date Picker */}
+   
         <div
           className="relative"
           onClick={() => setIsStartDatePickerOpen(true)}
@@ -154,7 +154,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               <DatePicker
                 selected={startDate}
                 onChange={(date: Date | null) => {
-                  setStartDate(date); // Accepting null here
+                  setStartDate(date); 
                   setIsStartDatePickerOpen(false);
                 }}
                 inline
@@ -164,7 +164,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           )}
         </div>
 
-        {/* End Date Picker */}
+      
         <div className="relative" onClick={() => setIsEndDatePickerOpen(true)}>
           <label
             htmlFor="endDate"
@@ -186,7 +186,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             size={20}
           />
           {isEndDatePickerOpen && (
-            <div className="absolute z-50 top-14 left-0 right-0 mx-auto w-72 bg-gray-800 bg-opacity-80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-indigo-500">
+            <div className="absolute !z-50 top-14 left-0 right-0 mx-auto w-72 bg-gray-800 bg-opacity-80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-indigo-500">
               <DatePicker
                 selected={endDate}
                 onChange={(date: Date | null) => {
