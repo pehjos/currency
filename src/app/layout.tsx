@@ -28,6 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+         <div className="glassmorphic-bg"></div>
         {children}
       </body>
     </html>

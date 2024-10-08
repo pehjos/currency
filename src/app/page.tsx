@@ -1,101 +1,153 @@
-import Image from "next/image";
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Header from './components/Header';
+import SearchForm from './components/SearchForm';
+import ResultsTable from './components/ResultsTable';
+import ErrorAlert from './components/ErrorAlert';
+import { LatestCurrencyData, HistoricalData, SearchParams } from './types/currencyTypes';
+
+function isLatestCurrencyData(data: LatestCurrencyData | HistoricalData): data is LatestCurrencyData {
+  return 'Realtime Currency Exchange Rate' in data;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
+  const [cachedData, setCachedData] = useState<LatestCurrencyData | HistoricalData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  useEffect(() => {
+    // Load cached data from localStorage if available
+    const cachedCurrencyData = localStorage.getItem('currencyData');
+    if (cachedCurrencyData) {
+      setCachedData(JSON.parse(cachedCurrencyData));
+    }
+  }, []);
+
+  // Error timeout: clears the error after 2 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 2000);
+      return () => clearTimeout(timer); // Cleanup the timer on component unmount
+    }
+  }, [error]);
+
+  const handleSearchLatest = (currencyCode: string) => {
+    const cacheKey = `${currencyCode}_latest`;
+    const cachedResult = localStorage.getItem(cacheKey);
+
+    if (cachedResult) {
+      setCachedData(JSON.parse(cachedResult));
+    } else {
+      setIsLoading(true);
+      setError(null);
+      setSearchParams({ currencyCode });
+      fetchLatestCurrencyRate(currencyCode, cacheKey);
+    }
+  };
+
+  const handleSearchHistorical = (params: SearchParams) => {
+    const { currencyCode, startDate, endDate } = params;
+    if (!currencyCode || !startDate || !endDate) {
+      setError('Please enter both start and end dates.');
+      return;
+    }
+
+    const cacheKey = `${currencyCode}_${startDate}_${endDate}`;
+    const cachedResult = localStorage.getItem(cacheKey);
+
+    if (cachedResult) {
+      setCachedData(JSON.parse(cachedResult));
+    } else {
+      setIsLoading(true);
+      setError(null);
+      setSearchParams(params);
+      fetchHistoricalCurrencyRate(params, cacheKey);
+    }
+  };
+
+  const fetchLatestCurrencyRate = async (currencyCode: string, cacheKey: string) => {
+    try {
+      const response = await fetch(`/api/fetchCurrency?currencyCode=${currencyCode}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch data.');
+      }
+
+      const data: LatestCurrencyData = await response.json();
+      setCachedData(data);
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      localStorage.setItem('currencyData', JSON.stringify(data));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Invalid currency code or failed to fetch data.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchHistoricalCurrencyRate = async (params: SearchParams, cacheKey: string) => {
+    try {
+      const { currencyCode, startDate, endDate } = params;
+      const response = await fetch(
+        `/api/fetchCurrency?currencyCode=${currencyCode}&startDate=${startDate}&endDate=${endDate}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch historical data.');
+      }
+
+      const data: HistoricalData = await response.json();
+      if (Object.keys(data).length === 0) {
+        localStorage.setItem('currencyData', '');
+        throw new Error('No historical data found for the provided date range.');
+      }
+
+      setCachedData(data);
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      localStorage.setItem('currencyData', JSON.stringify(data));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch data.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isLatestRate = cachedData && isLatestCurrencyData(cachedData);
+
+  return (
+    <div>
+      <Header />
+      <div className="flex items-center justify-center">
+        <main className="w-full max-w-4xl p-8 rounded shadow-md">
+          <h1 className="text-3xl font-bold text-center mb-6">Currency Viewer</h1>
+
+          <SearchForm onSearchLatest={handleSearchLatest} onSearchHistorical={handleSearchHistorical} />
+
+          {error && <ErrorAlert message={error} />}
+
+          {isLoading && searchParams && (
+            <div className="text-center mt-4 text-blue-500 font-semibold">Loading data...</div>
+          )}
+
+          {!isLoading && cachedData && (
+            <>
+              {isLatestRate && (
+                <div className="text-center mt-4 text-green-500 font-semibold">
+                  {cachedData['Realtime Currency Exchange Rate']['1. From_Currency Code']} rates in{' '}
+                  {cachedData['Realtime Currency Exchange Rate']['3. To_Currency Code']} - Latest: {cachedData['Realtime Currency Exchange Rate']['5. Exchange Rate']}
+                </div>
+              )}
+
+              {!isLatestRate && <ResultsTable data={cachedData as HistoricalData} />}
+            </>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
