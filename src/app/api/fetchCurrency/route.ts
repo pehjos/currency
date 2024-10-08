@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
   const cacheKey = `${currencyCode}_${startDate || "latest"}_${endDate || ""}`;
   const cachedData = cache.get(cacheKey);
 
-  // Return cached data if it exists
   if (cachedData) {
     console.log(`[CACHE HIT] Returning cached data for key: ${cacheKey}`);
     return NextResponse.json(cachedData, { status: 200 });
@@ -36,7 +35,6 @@ export async function GET(req: NextRequest) {
 
   try {
     if (!startDate && !endDate) {
-      // Fetch the latest exchange rate
       const response = await axios.get<LatestCurrencyData>(
         `${ALPHA_VANTAGE_BASE_URL}`,
         {
@@ -61,7 +59,6 @@ export async function GET(req: NextRequest) {
       cache.set(cacheKey, data);
       return NextResponse.json(data, { status: 200 });
     } else if (startDate && endDate) {
-      // Fetch historical exchange rates within the date range
       const response = await axios.get<HistoricalData>(
         `${ALPHA_VANTAGE_BASE_URL}`,
         {
@@ -82,17 +79,23 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      if (startDate && endDate) {
-        const filteredData = Object.fromEntries(
-          Object.entries(data).filter(
-            ([date]) => date >= startDate && date <= endDate
-          )
-        );
+      const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([date]) => {
+          const currentDate = new Date(date);
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          return currentDate >= start && currentDate <= end;
+        })
+      );
 
-        // Cache the filtered historical data
-        cache.set(cacheKey, filteredData);
-        return NextResponse.json(filteredData, { status: 200 });
+      if (Object.keys(filteredData).length === 0) {
+        return NextResponse.json(
+          { error: "No data available for the selected date range." },
+          { status: 404 }
+        );
       }
+      cache.set(cacheKey, filteredData);
+      return NextResponse.json(filteredData, { status: 200 });
     }
 
     return NextResponse.json(
