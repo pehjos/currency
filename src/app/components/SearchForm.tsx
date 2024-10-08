@@ -13,7 +13,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
   const [currencyCode, setCurrencyCode] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [filteredCurrencies, setFilteredCurrencies] = useState<Currency[]>([]); // Set Currency[] as the type
+  const [filteredCurrencies, setFilteredCurrencies] = useState<Currency[]>([]); 
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
@@ -40,7 +40,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
   };
 
   const handleCurrencySelect = (currency: Currency) => {
-    // Correctly typed now as Currency
     setCurrencyCode(currency.code);
     setShowSuggestions(false);
   };

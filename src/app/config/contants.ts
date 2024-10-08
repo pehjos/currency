@@ -1,4 +1,4 @@
-// src/config/constants.ts
+
 
 export const ALPHA_VANTAGE_API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY as string;
 export const ALPHA_VANTAGE_BASE_URL = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_BASE_URL as string;

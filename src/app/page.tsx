@@ -18,14 +18,13 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load cached data from localStorage if available
     const cachedCurrencyData = localStorage.getItem('currencyData');
     if (cachedCurrencyData) {
       setCachedData(JSON.parse(cachedCurrencyData));
     }
   }, []);
 
-  // Error timeout: clears the error after 2 seconds
+
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
